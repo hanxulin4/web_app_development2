@@ -28,65 +28,89 @@ class BookModel:
     @staticmethod
     def get_all():
         """取得所有書籍筆記，依照建立時間排序"""
-        with get_db_connection() as conn:
-            books = conn.execute('SELECT * FROM books ORDER BY created_at DESC').fetchall()
-            return [dict(book) for book in books]
+        try:
+            with get_db_connection() as conn:
+                books = conn.execute('SELECT * FROM books ORDER BY created_at DESC').fetchall()
+                return [dict(book) for book in books]
+        except sqlite3.Error as e:
+            print(f"Database error in get_all: {e}")
+            return []
 
     @staticmethod
     def get_by_id(book_id):
         """根據 ID 取得單一書籍筆記"""
-        with get_db_connection() as conn:
-            book = conn.execute('SELECT * FROM books WHERE id = ?', (book_id,)).fetchone()
-            return dict(book) if book else None
+        try:
+            with get_db_connection() as conn:
+                book = conn.execute('SELECT * FROM books WHERE id = ?', (book_id,)).fetchone()
+                return dict(book) if book else None
+        except sqlite3.Error as e:
+            print(f"Database error in get_by_id: {e}")
+            return None
 
     @staticmethod
     def create(title, author, review, rating, comment):
         """新增一筆書籍筆記"""
-        with get_db_connection() as conn:
-            cursor = conn.execute(
-                '''
-                INSERT INTO books (title, author, review, rating, comment)
-                VALUES (?, ?, ?, ?, ?)
-                ''',
-                (title, author, review, rating, comment)
-            )
-            conn.commit()
-            return cursor.lastrowid
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute(
+                    '''
+                    INSERT INTO books (title, author, review, rating, comment)
+                    VALUES (?, ?, ?, ?, ?)
+                    ''',
+                    (title, author, review, rating, comment)
+                )
+                conn.commit()
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"Database error in create: {e}")
+            return None
 
     @staticmethod
     def update(book_id, title, author, review, rating, comment):
         """更新一筆書籍筆記"""
-        with get_db_connection() as conn:
-            conn.execute(
-                '''
-                UPDATE books 
-                SET title = ?, author = ?, review = ?, rating = ?, comment = ?
-                WHERE id = ?
-                ''',
-                (title, author, review, rating, comment, book_id)
-            )
-            conn.commit()
-            return True
+        try:
+            with get_db_connection() as conn:
+                conn.execute(
+                    '''
+                    UPDATE books 
+                    SET title = ?, author = ?, review = ?, rating = ?, comment = ?
+                    WHERE id = ?
+                    ''',
+                    (title, author, review, rating, comment, book_id)
+                )
+                conn.commit()
+                return True
+        except sqlite3.Error as e:
+            print(f"Database error in update: {e}")
+            return False
 
     @staticmethod
     def delete(book_id):
         """刪除一筆書籍筆記"""
-        with get_db_connection() as conn:
-            conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
-            conn.commit()
-            return True
+        try:
+            with get_db_connection() as conn:
+                conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
+                conn.commit()
+                return True
+        except sqlite3.Error as e:
+            print(f"Database error in delete: {e}")
+            return False
             
     @staticmethod
     def search(keyword):
         """根據關鍵字搜尋書名或心得"""
-        with get_db_connection() as conn:
-            search_query = f"%{keyword}%"
-            books = conn.execute(
-                '''
-                SELECT * FROM books 
-                WHERE title LIKE ? OR review LIKE ? OR author LIKE ?
-                ORDER BY created_at DESC
-                ''', 
-                (search_query, search_query, search_query)
-            ).fetchall()
-            return [dict(book) for book in books]
+        try:
+            with get_db_connection() as conn:
+                search_query = f"%{keyword}%"
+                books = conn.execute(
+                    '''
+                    SELECT * FROM books 
+                    WHERE title LIKE ? OR review LIKE ? OR author LIKE ?
+                    ORDER BY created_at DESC
+                    ''', 
+                    (search_query, search_query, search_query)
+                ).fetchall()
+                return [dict(book) for book in books]
+        except sqlite3.Error as e:
+            print(f"Database error in search: {e}")
+            return []

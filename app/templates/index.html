@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 class="fw-bold mb-0">我的筆記清單</h2>
+    </div>
+    <div class="col-md-6">
+        <!-- 搜尋列 -->
+        <form action="{{ url_for('book_bp.index') }}" method="GET" class="d-flex mt-3 mt-md-0">
+            <input type="text" name="query" class="form-control me-2" placeholder="搜尋書名、作者或心得..." value="{{ query }}">
+            <button type="submit" class="btn btn-outline-primary">搜尋</button>
+            {% if query %}
+            <a href="{{ url_for('book_bp.index') }}" class="btn btn-outline-secondary ms-2">清除</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <!-- 用 Jinja2 的 for 迴圈將 books 陣列裡的筆記一張張印出來 -->
+    {% for book in books %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-primary">{{ book.title }}</h5>
+                <h6 class="card-subtitle mb-3 text-muted">
+                    {% if book.author %}作者：{{ book.author }}{% else %}作者：未知{% endif %}
+                </h6>
+                <div class="mb-3 d-flex align-items-center">
+                    <span class="text-warning fs-5">
+                        <!-- 依據評分印出實心星星與空心星星 -->
+                        {% for i in range(book.rating) %}★{% endfor %}
+                        {% for i in range(5 - book.rating) %}☆{% endfor %}
+                    </span>
+                    {% if book.comment %}
+                    <span class="badge bg-light text-dark border ms-2">{{ book.comment }}</span>
+                    {% endif %}
+                </div>
+                <!-- 心得內容，限制最多顯示 3 行 -->
+                <p class="card-text text-secondary" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ book.review }}
+                </p>
+                <p class="card-text mt-auto"><small class="text-muted">建立於：{{ book.created_at[:10] }}</small></p>
+            </div>
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-end pb-3">
+                <!-- 編輯按鈕：連向 /edit/<id> -->
+                <a href="{{ url_for('book_bp.edit_page', book_id=book.id) }}" class="btn btn-sm btn-outline-secondary me-2">編輯</a>
+                <!-- 刪除按鈕：必須用 POST 表單送出以確保安全 -->
+                <form action="{{ url_for('book_bp.delete_submit', book_id=book.id) }}" method="POST" onsubmit="return confirm('確定要刪除這筆筆記嗎？');" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- 如果 books 陣列是空的，顯示提示畫面 -->
+    <div class="col-12 text-center py-5">
+        <h4 class="text-muted">目前沒有找到任何筆記</h4>
+        <p class="text-muted mb-4">趕快新增你的第一筆讀書紀錄吧！</p>
+        <a href="{{ url_for('book_bp.add_page') }}" class="btn btn-primary">新增筆記</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

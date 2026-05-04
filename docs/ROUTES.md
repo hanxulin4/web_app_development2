@@ -57,7 +57,7 @@
 
 1. **`base.html`**
    - 基礎版型，包含共用的 `<head>` 與網站導覽列 (Navbar)。
-   - 透過 `{% block content %}{% endblock %}` 讓其他頁面填入主要內容。
+   - 透過 {% raw %}`{% block content %}{% endblock %}`{% endraw %} 讓其他頁面填入主要內容。
 2. **`index.html`**
    - 繼承自 `base.html`。
    - 負責顯示搜尋框與「新增筆記」按鈕。
